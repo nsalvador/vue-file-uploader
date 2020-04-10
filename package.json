@@ -6,7 +6,7 @@
 		"serve": "vue-cli-service serve",
 		"build": "vue-cli-service build",
 		"lint": "vue-cli-service lint",
-		"dev": "npm run build && env-cmd -f ./config/dev.env nodemon api/index.js"
+		"dev": "npm run build && env-cmd -f ./api/config/dev.env nodemon api/index.js"
 	},
 	"dependencies": {
 		"aws-sdk": "^2.656.0",

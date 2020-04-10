@@ -1,6 +1,6 @@
 const AWS = require('aws-sdk');
 
-class AWSAsync {
+class S3 {
 	constructor() {
 		this.config();
 		this.s3 = new AWS.S3();
@@ -30,4 +30,4 @@ class AWSAsync {
 	}
 }
 
-module.exports = new AWSAsync();
+module.exports = new S3();
