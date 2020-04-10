@@ -36,9 +36,16 @@ app.get('/', (req, res) => {
 	res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
+app.get('/bucket', async (req, res) => {
+	const response = await s3.listObjects({
+		Bucket: process.env.AWS_BUCKET
+	});
+	res.send(response.Contents);
+});
+
 app.post('/upload', upload.single('file'), async (req, res) => {
 	const file = req.file;
-	const response = await s3.upload({
+	await s3.upload({
 		Bucket: process.env.AWS_BUCKET,
 		Key: file.originalname,
 		ACL: 'public-read',
@@ -46,7 +53,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 		ContentEncoding: file.encoding,
 		Body: file.buffer
 	});
-	res.send(response);
+	res.send();
 });
 
 app.listen(PORT, () => console.log(`Server listening on port ${PORT}`));

@@ -9,17 +9,17 @@ class AWSAsync {
 		AWS.config.update({
 			accessKeyId: process.env.AWS_ACCESS_KEY_ID,
 			secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-			region: process.env.AWS_REGION,
+			region: process.env.AWS_REGION
 		});
 	}
-	// putObject(params) {
-	// 	return new Promise((resolve, reject) => {
-	// 		this.s3.putObject(params, (error, data) => {
-	// 			if (error) return reject(error);
-	// 			resolve(data);
-	// 		});
-	// 	});
-	// }
+	listObjects(params) {
+		return new Promise((resolve, reject) => {
+			this.s3.listObjects(params, (error, data) => {
+				if (error) return reject(error);
+				resolve(data);
+			});
+		});
+	}
 	upload(object) {
 		return new Promise((resolve, reject) => {
 			this.s3.upload(object, (error, data) => {
