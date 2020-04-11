@@ -19,15 +19,19 @@ router.get('/bucket', async (req, res) => {
 
 router.post('/upload', multer.single('file'), async (req, res) => {
 	const file = req.file;
-	await s3.upload({
-		ACL: 'public-read',
-		Bucket: process.env.AWS_BUCKET,
-		Key: file.originalname,
-		ContentType: file.mimetype,
-		ContentEncoding: file.encoding,
-		Body: file.buffer
-	});
-	res.send();
+	try {
+		await s3.upload({
+			ACL: 'public-read',
+			Bucket: process.env.AWS_BUCKET,
+			Key: file.originalname,
+			ContentType: file.mimetype,
+			ContentEncoding: file.encoding,
+			Body: file.buffer
+		});
+		res.send();
+	} catch (error) {
+		res.send({ error: 'Upload Failed.' });
+	}
 });
 
 module.exports = router;
