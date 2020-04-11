@@ -3,7 +3,7 @@
     <v-content>
       <v-container>
         <v-card outlined>
-          <v-form @submit.prevent="onSubmit" enctype="multipart/form-data">
+          <v-form @submit.prevent="onSubmit">
             <v-card-title>Upload File</v-card-title>
             <v-card-subtitle>
               Select a file that you would like to upload and then click the
@@ -21,9 +21,12 @@
                       <th class="text-left" v-for="(item, index) in headers" :key="index">{{ item }}</th>
                     </tr>
                   </thead>
-                  <tbody v-if="upload.length!==0">
+                  <tbody v-if="uploadedFile.length!==0">
                     <tr>
-                      <td v-for="(item, index) in upload" :key="index">{{ item }}</td>
+                      <td v-for="(item, index) in uploadedFile" :key="index">{{ item }}</td>
+                      <td v-if="uploadPercentage > 0">
+                        <v-progress-linear :value="uploadPercentage" />
+                      </td>
                     </tr>
                   </tbody>
                 </template>
@@ -31,7 +34,7 @@
             </v-card-text>
             <v-card-actions class="pt-0">
               <v-spacer />
-              <v-btn type="submit" class="blue white--text" depressed>upload</v-btn>
+              <v-btn type="submit" :disabled="!file" class="blue white--text" depressed>upload</v-btn>
             </v-card-actions>
           </v-form>
         </v-card>
@@ -48,8 +51,9 @@ export default {
   data: () => ({
     file: "",
     message: "",
-    upload: [],
-    headers: ["Name", "Type", "Last Modified", "Size"]
+    uploadedFile: [],
+    headers: ["Name", "Type", "Last Modified", "Size", "Progress"],
+    uploadPercentage: 0
   }),
   methods: {
     onSelect() {
@@ -63,13 +67,25 @@ export default {
     async onSubmit() {
       const formData = new FormData();
       formData.append("file", this.file);
+      const file = this.file;
+      this.$set(this.uploadedFile, 0, file.name);
+      this.$set(this.uploadedFile, 1, file.type);
+      this.$set(this.uploadedFile, 2, file.lastModified);
+      this.$set(this.uploadedFile, 3, file.size);
       try {
-        await axios.post("/upload", formData);
-        const file = this.file;
-        this.$set(this.upload, 0, file.name);
-        this.$set(this.upload, 1, file.type);
-        this.$set(this.upload, 2, file.lastModified);
-        this.$set(this.upload, 3, file.size);
+        await axios({
+          headers: {
+            "Content-Type": "multipart/form-data"
+          },
+          onUploadProgress: progressEvent => {
+            this.uploadPercentage = parseInt(
+              Math.round((progressEvent.loaded / progressEvent.total) * 100)
+            );
+          },
+          url: "/upload",
+          method: "post",
+          data: formData
+        });
         this.file = "";
       } catch (error) {
         this.message = error.response.data.error;
