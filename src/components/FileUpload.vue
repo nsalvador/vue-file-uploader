@@ -29,13 +29,19 @@
                       >{{ item }}</th>
                     </tr>
                   </thead>
-                  <tbody v-show="uploadedFile.length!==0">
+                  <tbody v-show="Object.keys(uploadedFile).length!==0">
                     <tr>
-                      <td v-for="(item, index) in uploadedFile" :key="index">{{ item }}</td>
+                      <td>{{ uploadedFile.name }}</td>
+                      <td>{{ uploadedFile.type }}</td>
+                      <td>{{ uploadedFile.lastModified }}</td>
+                      <td>{{ uploadedFile.size }}</td>
                       <td v-show="uploadPercentage > 0">
                         <v-progress-linear v-model="uploadPercentage" reactive height="25">
                           <strong>{{ uploadPercentage.toString() + '%' }}</strong>
                         </v-progress-linear>
+                      </td>
+                      <td v-show="uploadPercentage === 100">
+                        <v-icon @click="uploadedFile={}">mdi-close</v-icon>
                       </td>
                     </tr>
                   </tbody>
@@ -62,13 +68,13 @@ export default {
     file: "",
     message: "",
     snackbar: false,
-    uploadedFile: [],
+    uploadedFile: {},
     tableHeaders: ["Name", "Type", "Last Modified", "Size", "Progress"],
     uploadPercentage: 0
   }),
   methods: {
     onClick() {
-      this.file = "";
+      if (this.file) this.file = "";
       this.snackbar = false;
     },
     onSelect() {
@@ -84,10 +90,10 @@ export default {
       const formData = new FormData();
       formData.append("file", this.file);
       const file = this.file;
-      this.$set(this.uploadedFile, 0, file.name);
-      this.$set(this.uploadedFile, 1, file.type);
-      this.$set(this.uploadedFile, 2, file.lastModified);
-      this.$set(this.uploadedFile, 3, file.size);
+      this.$set(this.uploadedFile, "name", file.name);
+      this.$set(this.uploadedFile, "type", file.type);
+      this.$set(this.uploadedFile, "lastModified", file.lastModified);
+      this.$set(this.uploadedFile, "size", file.size);
       try {
         await axios.post("/upload", formData, {
           headers: {
@@ -101,6 +107,7 @@ export default {
         });
         this.file = "";
       } catch (error) {
+        this.snackbar = true;
         this.message = error.response.data.error;
       }
     }
