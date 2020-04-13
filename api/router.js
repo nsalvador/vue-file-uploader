@@ -21,7 +21,7 @@ router.post('/upload', multer.single('file'), async (req, res) => {
 	const file = req.file;
 	try {
 		await s3.upload({
-			ACL: 'public-read',
+			ACL: process.env.AWS_ACL,
 			Bucket: process.env.AWS_BUCKET,
 			Key: file.originalname,
 			ContentType: file.mimetype,

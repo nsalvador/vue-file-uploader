@@ -12,20 +12,30 @@
             <v-card-text class="py-0">
               <v-file-input v-model="file" label="Choose file" outlined dense @change="onSelect" />
             </v-card-text>
+            <v-snackbar v-model="snackbar" :timeout="0">
+              {{ message }}
+              <v-btn text @click="onClick">Close</v-btn>
+            </v-snackbar>
             <v-divider></v-divider>
             <v-card-text>
               <v-simple-table>
                 <template v-slot:default>
                   <thead>
                     <tr>
-                      <th class="text-left" v-for="(item, index) in headers" :key="index">{{ item }}</th>
+                      <th
+                        class="text-left"
+                        v-for="(item, index) in tableHeaders"
+                        :key="index"
+                      >{{ item }}</th>
                     </tr>
                   </thead>
-                  <tbody v-if="uploadedFile.length!==0">
+                  <tbody v-show="uploadedFile.length!==0">
                     <tr>
                       <td v-for="(item, index) in uploadedFile" :key="index">{{ item }}</td>
-                      <td v-if="uploadPercentage > 0">
-                        <v-progress-linear :value="uploadPercentage" />
+                      <td v-show="uploadPercentage > 0">
+                        <v-progress-linear v-model="uploadPercentage" reactive height="25">
+                          <strong>{{ uploadPercentage.toString() + '%' }}</strong>
+                        </v-progress-linear>
                       </td>
                     </tr>
                   </tbody>
@@ -51,17 +61,23 @@ export default {
   data: () => ({
     file: "",
     message: "",
+    snackbar: false,
     uploadedFile: [],
-    headers: ["Name", "Type", "Last Modified", "Size", "Progress"],
+    tableHeaders: ["Name", "Type", "Last Modified", "Size", "Progress"],
     uploadPercentage: 0
   }),
   methods: {
+    onClick() {
+      this.file = "";
+      this.snackbar = false;
+    },
     onSelect() {
-      const allowedTypes = ["application/pdf"];
-      if (!allowedTypes.includes(this.file.type)) {
-        this.message = "Only pdf files are required!!";
-        this.file = "";
-        return;
+      const fileTypes = ["application/pdf"];
+      if (this.file && !fileTypes.includes(this.file.type)) {
+        this.snackbar = true;
+        this.message = "Not valid file type.";
+      } else {
+        this.snackbar = false;
       }
     },
     async onSubmit() {
@@ -73,18 +89,15 @@ export default {
       this.$set(this.uploadedFile, 2, file.lastModified);
       this.$set(this.uploadedFile, 3, file.size);
       try {
-        await axios({
+        await axios.post("/upload", formData, {
           headers: {
             "Content-Type": "multipart/form-data"
           },
           onUploadProgress: progressEvent => {
-            this.uploadPercentage = parseInt(
-              Math.round((progressEvent.loaded / progressEvent.total) * 100)
+            this.uploadPercentage = Math.round(
+              (progressEvent.loaded / progressEvent.total) * 100
             );
-          },
-          url: "/upload",
-          method: "post",
-          data: formData
+          }
         });
         this.file = "";
       } catch (error) {
