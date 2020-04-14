@@ -9,7 +9,7 @@ module.exports = [
 	router,
 	(err, req, res, next) => {
 		if (err.code === 'INCORRET_FILETYPE') {
-			return res.status(422).send({ error: 'Only pdf files are allowed' });
+			return res.status(422).send({ error: 'Not valid file type.' });
 		}
 	}
 ];
