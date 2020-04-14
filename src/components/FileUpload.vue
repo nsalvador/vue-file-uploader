@@ -114,14 +114,9 @@ export default {
       }
     },
     async onSubmit() {
-      const formData = new FormData();
-      formData.append("file", this.file);
-      const file = this.file;
-      this.$set(this.uploadedFile, "name", file.name);
-      this.$set(this.uploadedFile, "type", file.type);
-      this.$set(this.uploadedFile, "lastModified", file.lastModified);
-      this.$set(this.uploadedFile, "size", file.size);
       try {
+        const formData = new FormData();
+        formData.append("file", this.file);
         await axios.post("/upload", formData, {
           headers: {
             "Content-Type": "multipart/form-data"
@@ -132,10 +127,16 @@ export default {
             );
           }
         });
-        this.file = "";
+        const file = this.file;
+        this.$set(this.uploadedFile, "name", file.name);
+        this.$set(this.uploadedFile, "type", file.type);
+        this.$set(this.uploadedFile, "lastModified", file.lastModified);
+        this.$set(this.uploadedFile, "size", file.size);
       } catch (error) {
         this.snackbar = true;
-        this.message = error.response.data.error;
+        this.message = "Upload Failed.";
+      } finally {
+        this.file = "";
       }
     }
   }

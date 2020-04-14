@@ -30,7 +30,7 @@ router.post('/upload', multer.single('file'), async (req, res) => {
 		});
 		res.send();
 	} catch (error) {
-		res.send({ error: 'Upload Failed.' });
+		res.status(500).send();
 	}
 });
 
