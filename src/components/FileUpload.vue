@@ -24,18 +24,18 @@
                     <tr>
                       <th
                         class="text-left"
-                        v-for="(heading, index) in headings"
+                        v-for="(heading, index) in headings_1"
                         :key="index"
                       >{{ heading }}</th>
                     </tr>
                   </thead>
-                  <tbody v-show="Object.keys(uploadedFile).length !== 0">
-                    <tr>
+                  <tbody v-show="Object.keys(uploadedFile).length">
+                    <tr v-for="(item, index) in [uploadedFile]" :key="index">
                       <td>{{ uploadedFile.name }}</td>
                       <td>{{ uploadedFile.type }}</td>
                       <td>{{ uploadedFile.lastModified | lastModified }}</td>
                       <td>{{ uploadedFile.size | fileSize }}</td>
-                      <td v-show="uploadPercentage !== 0">
+                      <td v-show="uploadPercentage">
                         <v-progress-linear v-model="uploadPercentage" reactive height="25">
                           <strong>
                             {{
@@ -64,6 +64,42 @@
           </v-form>
         </v-card>
       </v-container>
+      <v-container>
+        <v-card outlined>
+          <v-card-title>Files in Bucket</v-card-title>
+          <v-card-subtitle>This is a listing of files that have been uploaded to the bucket</v-card-subtitle>
+          <v-divider></v-divider>
+          <v-card-text>
+            <v-simple-table>
+              <template v-slot:default>
+                <thead>
+                  <tr>
+                    <th
+                      class="text-left"
+                      v-for="(item, index) in headings_2"
+                      :key="index"
+                    >{{ item }}</th>
+                  </tr>
+                </thead>
+                <tbody v-if="bucket.length">
+                  <tr v-for="(item, index) in bucket" :key="index">
+                    <td>{{ item.Key }}</td>
+                    <td>{{ item.LastModified | lastModified }}</td>
+                    <td>{{ item.Size | fileSize }}</td>
+                    <td>
+                      <v-btn width="85" class="blue white--text" text>link</v-btn>
+                    </td>
+                    <td>
+                      <v-btn width="85" class="blue white--text" text>delete</v-btn>
+                    </td>
+                  </tr>
+                </tbody>
+                <v-banner v-else>Bucket Is Empty</v-banner>
+              </template>
+            </v-simple-table>
+          </v-card-text>
+        </v-card>
+      </v-container>
     </v-content>
   </v-app>
 </template>
@@ -88,18 +124,33 @@ export default {
       return `${bytes.toFixed(1)} ${units[u]}`;
     },
     lastModified(date) {
-      return moment(date).format("MM-DD-YYYY");
+      return moment(date).format("MMMM Do, YYYY");
     }
+  },
+
+  async created() {
+    this.getBucket();
   },
   data: () => ({
     file: "",
     message: "",
+    bucket: [],
     snackbar: false,
     uploadedFile: {},
-    headings: ["Name", "Type", "Last Modified", "Size", "Progress"],
+    headings_1: ["Name", "Type", "Last Modified", "Size", "Progress"],
+    headings_2: ["Name", "Last Modified", "Size"],
     uploadPercentage: 0
   }),
   methods: {
+    async getBucket() {
+      try {
+        const response = await axios.get("/bucket");
+        this.bucket = response.data;
+      } catch (error) {
+        this.snackbar = true;
+        this.message = "Failed to get bucket";
+      }
+    },
     onClick() {
       if (this.file) this.file = "";
       this.snackbar = false;
@@ -114,9 +165,9 @@ export default {
       }
     },
     async onSubmit() {
+      const formData = new FormData();
+      formData.append("file", this.file);
       try {
-        const formData = new FormData();
-        formData.append("file", this.file);
         await axios.post("/upload", formData, {
           headers: {
             "Content-Type": "multipart/form-data"
@@ -132,6 +183,7 @@ export default {
         this.$set(this.uploadedFile, "type", file.type);
         this.$set(this.uploadedFile, "lastModified", file.lastModified);
         this.$set(this.uploadedFile, "size", file.size);
+        this.getBucket();
       } catch (error) {
         this.snackbar = true;
         this.message = "Upload Failed.";

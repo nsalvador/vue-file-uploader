@@ -11,10 +11,14 @@ router.get('/', (req, res) => {
 });
 
 router.get('/bucket', async (req, res) => {
-	const response = await s3.listObjects({
-		Bucket: process.env.AWS_BUCKET
-	});
-	res.send(response.Contents);
+	try {
+		const response = await s3.listObjects({
+			Bucket: process.env.AWS_BUCKET
+		});
+		res.send(response.Contents);
+	} catch (error) {
+		res.status(500).send();
+	}
 });
 
 router.post('/upload', multer.single('file'), async (req, res) => {
