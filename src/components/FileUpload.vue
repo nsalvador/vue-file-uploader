@@ -20,35 +20,23 @@
             <v-card-text>
               <v-simple-table>
                 <template v-slot:default>
-                  <thead>
-                    <tr>
-                      <th
-                        class="text-left"
-                        v-for="(heading, index) in headings_1"
-                        :key="index"
-                      >{{ heading }}</th>
-                    </tr>
-                  </thead>
-                  <tbody v-show="Object.keys(uploadedFile).length">
-                    <tr v-for="(item, index) in [uploadedFile]" :key="index">
-                      <td>{{ uploadedFile.name }}</td>
-                      <td>{{ uploadedFile.type }}</td>
-                      <td>{{ uploadedFile.lastModified | lastModified }}</td>
-                      <td>{{ uploadedFile.size | fileSize }}</td>
-                      <td v-show="uploadPercentage">
-                        <v-progress-linear v-model="uploadPercentage" reactive height="25">
-                          <strong>
-                            {{
-                            uploadPercentage.toString() + '%'
-                            }}
-                          </strong>
-                        </v-progress-linear>
-                      </td>
-                      <td v-show="uploadPercentage === 100">
-                        <v-icon @click="uploadedFile = {}">mdi-close</v-icon>
-                      </td>
-                    </tr>
-                  </tbody>
+                  <app-table-header
+                    :header="['Name', 'Type', 'Last Modified', 'Size', 'Progress']"
+                  />
+                  <app-table-body v-show="Object.keys(uploadedFile).length" :body="[uploadedFile]">
+                    <td v-show="uploadPercentage" slot="progress-bar">
+                      <v-progress-linear v-model="uploadPercentage" reactive height="25">
+                        <strong>
+                          {{
+                          uploadPercentage.toString() + '%'
+                          }}
+                        </strong>
+                      </v-progress-linear>
+                    </td>
+                    <td v-show="uploadPercentage === 100" slot="close-button">
+                      <v-icon @click="uploadedFile = {}">mdi-close</v-icon>
+                    </td>
+                  </app-table-body>
                 </template>
               </v-simple-table>
             </v-card-text>
@@ -72,28 +60,15 @@
           <v-card-text>
             <v-simple-table>
               <template v-slot:default>
-                <thead>
-                  <tr>
-                    <th
-                      class="text-left"
-                      v-for="(item, index) in headings_2"
-                      :key="index"
-                    >{{ item }}</th>
-                  </tr>
-                </thead>
-                <tbody v-if="bucket.length">
-                  <tr v-for="(item, index) in bucket" :key="index">
-                    <td>{{ item.Key }}</td>
-                    <td>{{ item.LastModified | lastModified }}</td>
-                    <td>{{ item.Size | fileSize }}</td>
-                    <td>
-                      <v-btn width="85" class="blue white--text" text>link</v-btn>
-                    </td>
-                    <td>
-                      <v-btn width="85" class="blue white--text" text>delete</v-btn>
-                    </td>
-                  </tr>
-                </tbody>
+                <app-table-header :header="['Name', 'Last Modified', 'Size']" />
+                <app-table-body v-if="bucket.length" :body="bucket">
+                  <td slot="link-button">
+                    <v-btn width="85" class="blue white--text" text>link</v-btn>
+                  </td>
+                  <td slot="delete-button">
+                    <v-btn width="85" class="blue white--text" text>delete</v-btn>
+                  </td>
+                </app-table-body>
                 <v-banner v-else>Bucket Is Empty</v-banner>
               </template>
             </v-simple-table>
@@ -127,8 +102,11 @@ export default {
       return moment(date).format("MMMM Do, YYYY");
     }
   },
-
-  async created() {
+  components: {
+    AppTableHeader: () => import("./TableHeader.vue"),
+    AppTableBody: () => import("./TableBody.vue")
+  },
+  created() {
     this.getBucket();
   },
   data: () => ({
@@ -137,8 +115,6 @@ export default {
     bucket: [],
     snackbar: false,
     uploadedFile: {},
-    headings_1: ["Name", "Type", "Last Modified", "Size", "Progress"],
-    headings_2: ["Name", "Last Modified", "Size"],
     uploadPercentage: 0
   }),
   methods: {

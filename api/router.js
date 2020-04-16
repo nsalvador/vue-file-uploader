@@ -13,7 +13,7 @@ router.get('/', (req, res) => {
 router.get('/bucket', async (req, res) => {
 	try {
 		const response = await s3.listObjects({
-			Bucket: process.env.AWS_BUCKET
+			Bucket: process.env.AWS_BUCKET,
 		});
 		res.send(response.Contents);
 	} catch (error) {
@@ -30,7 +30,7 @@ router.post('/upload', multer.single('file'), async (req, res) => {
 			Key: file.originalname,
 			ContentType: file.mimetype,
 			ContentEncoding: file.encoding,
-			Body: file.buffer
+			Body: file.buffer,
 		});
 		res.send();
 	} catch (error) {
