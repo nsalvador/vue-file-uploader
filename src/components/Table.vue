@@ -20,6 +20,7 @@
 
 <script>
 export default {
+  name: "Table",
   props: {
     contents: {
       type: Object

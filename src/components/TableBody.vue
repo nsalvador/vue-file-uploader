@@ -3,8 +3,8 @@
     <tr v-for="(item, index) in body" :key="index">
       <td>{{ item.name ? item.name : item.Key }}</td>
       <td v-show="item.type">{{ item.type }}</td>
-      <td>{{ item.lastModified ? item.lastModified : item.LastModified }}</td>
-      <td>{{ item.size ? item.size : item.Size }}</td>
+      <td>{{ item.lastModified ? item.lastModified : item.LastModified | lastModified }}</td>
+      <td>{{ item.size ? item.size : item.Size | fileSize }}</td>
       <slot name="upload-complete" />
       <slot name="action-buttons" :itemKey="item.Key" />
     </tr>
