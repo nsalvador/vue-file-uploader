@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <file-upload />
+    <app-default />
   </div>
 </template>
 
@@ -8,7 +8,7 @@
 export default {
   name: "app",
   components: {
-    FileUpload: () => import("./components/FileUpload")
+    AppDefault: () => import("./views/Default")
   }
 };
 </script>

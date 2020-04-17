@@ -5,10 +5,8 @@
       <td v-show="item.type">{{ item.type }}</td>
       <td>{{ item.lastModified ? item.lastModified : item.LastModified }}</td>
       <td>{{ item.size ? item.size : item.Size }}</td>
-      <slot name="progress-bar"></slot>
-      <slot name="close-button"></slot>
-      <slot name="link-button"></slot>
-      <slot name="delete-button"></slot>
+      <slot name="upload-complete" />
+      <slot name="action-buttons" :itemKey="item.Key" />
     </tr>
   </tbody>
 </template>

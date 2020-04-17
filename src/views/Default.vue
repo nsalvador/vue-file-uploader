@@ -18,27 +18,20 @@
             </v-snackbar>
             <v-divider></v-divider>
             <v-card-text>
-              <v-simple-table>
-                <template v-slot:default>
-                  <app-table-header
-                    :header="['Name', 'Type', 'Last Modified', 'Size', 'Progress']"
-                  />
-                  <app-table-body v-show="Object.keys(uploadedFile).length" :body="[uploadedFile]">
-                    <td v-show="uploadPercentage" slot="progress-bar">
-                      <v-progress-linear v-model="uploadPercentage" reactive height="25">
-                        <strong>
-                          {{
-                          uploadPercentage.toString() + '%'
-                          }}
-                        </strong>
-                      </v-progress-linear>
-                    </td>
-                    <td v-show="uploadPercentage === 100" slot="close-button">
-                      <v-icon @click="uploadedFile = {}">mdi-close</v-icon>
-                    </td>
-                  </app-table-body>
+              <app-table
+                :contents="{header: ['Name', 'Type', 'Last Modified', 'Size', 'Progress'], body: [uploadedFile]}"
+              >
+                <template v-slot:upload-complete>
+                  <td v-show="uploadPercentage">
+                    <v-progress-linear v-model="uploadPercentage" reactive height="25">
+                      <strong>{{ uploadPercentage.toString() + '%' }}</strong>
+                    </v-progress-linear>
+                  </td>
+                  <td v-show="uploadPercentage === 100">
+                    <v-icon @click="uploadedFile = {}">mdi-close</v-icon>
+                  </td>
                 </template>
-              </v-simple-table>
+              </app-table>
             </v-card-text>
             <v-card-actions class="pt-0">
               <v-spacer />
@@ -58,20 +51,22 @@
           <v-card-subtitle>This is a listing of files that have been uploaded to the bucket</v-card-subtitle>
           <v-divider></v-divider>
           <v-card-text>
-            <v-simple-table>
-              <template v-slot:default>
-                <app-table-header :header="['Name', 'Last Modified', 'Size']" />
-                <app-table-body v-if="bucket.length" :body="bucket">
-                  <td slot="link-button">
-                    <v-btn width="85" class="blue white--text" text>link</v-btn>
-                  </td>
-                  <td slot="delete-button">
-                    <v-btn width="85" class="blue white--text" text>delete</v-btn>
-                  </td>
-                </app-table-body>
-                <v-banner v-else>Bucket Is Empty</v-banner>
+            <app-table :contents="{header: ['Name', 'Last Modified', 'Size'], body: bucket}">
+              <template v-slot:action-buttons="item">
+                <td>
+                  <v-btn
+                    width="85"
+                    class="blue white--text"
+                    text
+                    @click="linkHandler(item.itemKey)"
+                  >link</v-btn>
+                </td>
+                <td>
+                  <v-btn width="85" class="blue white--text" text>delete</v-btn>
+                </td>
               </template>
-            </v-simple-table>
+              <v-banner>Bucket Is Empty</v-banner>
+            </app-table>
           </v-card-text>
         </v-card>
       </v-container>
@@ -103,8 +98,7 @@ export default {
     }
   },
   components: {
-    AppTableHeader: () => import("./TableHeader.vue"),
-    AppTableBody: () => import("./TableBody.vue")
+    AppTable: () => import("../components/Table")
   },
   created() {
     this.getBucket();
@@ -118,6 +112,12 @@ export default {
     uploadPercentage: 0
   }),
   methods: {
+    linkHandler(value) {
+      window.open(
+        `https://vue-file-uploader.s3.us-east-2.amazonaws.com/${value}`,
+        "_blank"
+      );
+    },
     async getBucket() {
       try {
         const response = await axios.get("/bucket");
