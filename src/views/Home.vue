@@ -53,12 +53,23 @@
           <v-card-subtitle>This is a listing of files that have been uploaded to the bucket</v-card-subtitle>
           <v-divider></v-divider>
           <v-card-text>
-            <app-table
-              :contents="{header: ['Select', 'Name', 'Last Modified', 'Size'], body: bucket}"
-            >
+            <app-table :contents="{header: ['Name', 'Last Modified', 'Size'], body: bucket}">
+              <template v-slot:checkbox-header>
+                <th>
+                  <v-checkbox
+                    v-model="checkbox"
+                    @change="checkboxChangeHandler"
+                    :disabled="!bucket.length"
+                  />
+                </th>
+              </template>
               <template v-slot:checkbox="{itemKey}">
                 <td>
-                  <v-checkbox v-model="selected" :value="itemKey" />
+                  <v-checkbox
+                    v-model="selected"
+                    :value="itemKey"
+                    @change="checkbox=(selected.length===bucket.length)"
+                  />
                 </td>
               </template>
               <template v-slot:action-buttons="{itemKey}">
@@ -111,12 +122,22 @@ export default {
     uploadedFile: {},
     uploadPercentage: 0,
     dialog: false,
-    selected: []
+    selected: [],
+    checkbox: false
   }),
   created() {
     this.getBucket();
   },
   methods: {
+    checkboxChangeHandler() {
+      if (!this.checkbox && this.selected.length) {
+        this.selected = [];
+      } else if (this.selected.length !== this.bucket.length) {
+        this.bucket.forEach((item, index) =>
+          this.$set(this.selected, index, item.Key)
+        );
+      }
+    },
     openLink(value) {
       window.open(
         `https://vue-file-uploader.s3.us-east-2.amazonaws.com/${value}`,
@@ -128,6 +149,7 @@ export default {
         const response = await axios.get("/bucket");
         this.bucket = response.data;
         this.selected = [];
+        this.checkbox = false;
       } catch (error) {
         this.snackbar = true;
         this.message = "Failed to get bucket";

@@ -1,7 +1,11 @@
 <template>
   <v-simple-table>
     <template v-slot:default>
-      <app-table-header :header="contents.header" />
+      <app-table-header :header="contents.header">
+        <template v-slot:checkbox-header>
+          <slot name="checkbox-header" />
+        </template>
+      </app-table-header>
       <app-table-body
         v-if="contents.body.length && Object.keys(contents.body[0]).length"
         :body="contents.body"
