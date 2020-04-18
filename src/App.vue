@@ -1,14 +1,14 @@
 <template>
   <div id="app">
-    <app-default />
+    <app-home />
   </div>
 </template>
 
 <script>
 export default {
-  name: "app",
+  name: "App",
   components: {
-    AppDefault: () => import("./views/Default")
+    AppHome: () => import("./views/Home")
   }
 };
 </script>

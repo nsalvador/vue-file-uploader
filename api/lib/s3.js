@@ -9,12 +9,20 @@ class S3 {
 		AWS.config.update({
 			accessKeyId: process.env.AWS_ACCESS_KEY_ID,
 			secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-			region: process.env.AWS_REGION
+			region: process.env.AWS_REGION,
 		});
 	}
 	listObjects(params) {
 		return new Promise((resolve, reject) => {
 			this.s3.listObjects(params, (error, data) => {
+				if (error) return reject(error);
+				resolve(data);
+			});
+		});
+	}
+	deleteObjects(params) {
+		return new Promise((resolve, reject) => {
+			this.s3.deleteObjects(params, (error, data) => {
 				if (error) return reject(error);
 				resolve(data);
 			});

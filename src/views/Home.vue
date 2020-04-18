@@ -52,17 +52,17 @@
           <v-divider></v-divider>
           <v-card-text>
             <app-table :contents="{header: ['Name', 'Last Modified', 'Size'], body: bucket}">
-              <template v-slot:action-buttons="item">
+              <template v-slot:action-buttons="{itemKey}">
+                <td>
+                  <v-btn width="85" class="blue white--text" text @click="openLink(itemKey)">link</v-btn>
+                </td>
                 <td>
                   <v-btn
                     width="85"
                     class="blue white--text"
                     text
-                    @click="linkHandler(item.itemKey)"
-                  >link</v-btn>
-                </td>
-                <td>
-                  <v-btn width="85" class="blue white--text" text>delete</v-btn>
+                    @click="openDialog(itemKey)"
+                  >delete</v-btn>
                 </td>
               </template>
               <v-banner>Bucket Is Empty</v-banner>
@@ -70,36 +70,50 @@
           </v-card-text>
         </v-card>
       </v-container>
+      <v-dialog v-model="dialog" max-width="290" persistent>
+        <v-card>
+          <v-card-title>Delete</v-card-title>
+          <v-divider></v-divider>
+          <v-card-text class="py-2">Are you sure you want to delete file from the bucket?</v-card-text>
+          <v-divider></v-divider>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn text @click="deleteHandler">yes</v-btn>
+            <v-btn text @click="dialog=false">no</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-content>
   </v-app>
 </template>
 
 <script>
 import axios from "axios";
-import moment from "moment";
 
 export default {
-  name: "FileUpload",
-  components: {
-    AppTable: () => import("../components/Table")
-  },
-  created() {
-    this.getBucket();
-  },
+  name: "Home",
   data: () => ({
     file: "",
     message: "",
     bucket: [],
     snackbar: false,
     uploadedFile: {},
-    uploadPercentage: 0
+    uploadPercentage: 0,
+    dialog: false
   }),
+  created() {
+    this.getBucket();
+  },
   methods: {
-    linkHandler(value) {
+    openLink(value) {
       window.open(
         `https://vue-file-uploader.s3.us-east-2.amazonaws.com/${value}`,
         "_blank"
       );
+    },
+    openDialog(value) {
+      this.dialog = true;
+      this.file = value;
     },
     async getBucket() {
       try {
@@ -108,6 +122,21 @@ export default {
       } catch (error) {
         this.snackbar = true;
         this.message = "Failed to get bucket";
+      }
+    },
+    async deleteHandler() {
+      try {
+        this.dialog = false;
+        await axios.delete("/", {
+          data: { Key: this.file }
+        });
+        this.message = "Deletion successful.";
+        this.getBucket();
+      } catch (error) {
+        this.message = "Deletion failed.";
+      } finally {
+        this.snackbar = true;
+        this.file = "";
       }
     },
     onClick() {
@@ -150,6 +179,9 @@ export default {
         this.file = "";
       }
     }
+  },
+  components: {
+    AppTable: () => import("../components/Table")
   }
 };
 </script>

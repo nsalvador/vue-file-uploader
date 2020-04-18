@@ -10,6 +10,21 @@ router.get('/', (req, res) => {
 	res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
+router.delete('/', async (req, res) => {
+	try {
+		const Key = req.body.Key;
+		await s3.deleteObjects({
+			Bucket: process.env.AWS_BUCKET,
+			Delete: {
+				Objects: [{ Key }],
+			},
+		});
+		res.send();
+	} catch (error) {
+		res.status(500).send();
+	}
+});
+
 router.get('/bucket', async (req, res) => {
 	try {
 		const response = await s3.listObjects({
