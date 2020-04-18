@@ -12,9 +12,11 @@
             <v-card-text class="py-0">
               <v-file-input v-model="file" label="Choose file" outlined dense @change="onChange" />
             </v-card-text>
-            <v-snackbar v-model="snackbar" :timeout="0">
+            <v-snackbar v-model="snackbar" :timeout="5000">
               {{ message }}
-              <v-btn text @click="onClick">Close</v-btn>
+              <v-btn @click="onClick" icon text>
+                <v-icon class="white--text">mdi-close</v-icon>
+              </v-btn>
             </v-snackbar>
             <v-divider></v-divider>
             <v-card-text>
@@ -24,7 +26,7 @@
                 <template v-slot:upload-complete>
                   <td v-show="uploadPercentage">
                     <v-progress-linear v-model="uploadPercentage" reactive height="25">
-                      <strong>{{ uploadPercentage.toString() + '%' }}</strong>
+                      <strong>{{ message === 'Upload Failed' ? message : uploadPercentage.toString() + '%' }}</strong>
                     </v-progress-linear>
                   </td>
                   <td v-show="uploadPercentage === 100">
@@ -51,30 +53,39 @@
           <v-card-subtitle>This is a listing of files that have been uploaded to the bucket</v-card-subtitle>
           <v-divider></v-divider>
           <v-card-text>
-            <app-table :contents="{header: ['Name', 'Last Modified', 'Size'], body: bucket}">
+            <app-table
+              :contents="{header: ['Select', 'Name', 'Last Modified', 'Size'], body: bucket}"
+            >
+              <template v-slot:checkbox="{itemKey}">
+                <td>
+                  <v-checkbox v-model="selected" :value="itemKey" />
+                </td>
+              </template>
               <template v-slot:action-buttons="{itemKey}">
                 <td>
                   <v-btn width="85" class="blue white--text" text @click="openLink(itemKey)">link</v-btn>
-                </td>
-                <td>
-                  <v-btn
-                    width="85"
-                    class="blue white--text"
-                    text
-                    @click="openDialog(itemKey)"
-                  >delete</v-btn>
                 </td>
               </template>
               <v-banner>Bucket Is Empty</v-banner>
             </app-table>
           </v-card-text>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn
+              class="blue white--text"
+              text
+              :disabled="!selected.length"
+              depressed
+              @click="dialog=true"
+            >delete</v-btn>
+          </v-card-actions>
         </v-card>
       </v-container>
       <v-dialog v-model="dialog" max-width="290" persistent>
         <v-card>
           <v-card-title>Delete</v-card-title>
           <v-divider></v-divider>
-          <v-card-text class="py-2">Are you sure you want to delete file from the bucket?</v-card-text>
+          <v-card-text class="py-2">Are you sure you want to delete file(s) from the bucket?</v-card-text>
           <v-divider></v-divider>
           <v-card-actions>
             <v-spacer></v-spacer>
@@ -99,7 +110,8 @@ export default {
     snackbar: false,
     uploadedFile: {},
     uploadPercentage: 0,
-    dialog: false
+    dialog: false,
+    selected: []
   }),
   created() {
     this.getBucket();
@@ -111,14 +123,11 @@ export default {
         "_blank"
       );
     },
-    openDialog(value) {
-      this.dialog = true;
-      this.file = value;
-    },
     async getBucket() {
       try {
         const response = await axios.get("/bucket");
         this.bucket = response.data;
+        this.selected = [];
       } catch (error) {
         this.snackbar = true;
         this.message = "Failed to get bucket";
@@ -128,7 +137,7 @@ export default {
       try {
         this.dialog = false;
         await axios.delete("/", {
-          data: { Key: this.file }
+          data: { contents: this.selected }
         });
         this.message = "Deletion successful.";
         this.getBucket();
@@ -153,9 +162,14 @@ export default {
       }
     },
     async onSubmit() {
-      const formData = new FormData();
-      formData.append("file", this.file);
       try {
+        const formData = new FormData();
+        formData.append("file", this.file);
+        const file = this.file;
+        this.$set(this.uploadedFile, "name", file.name);
+        this.$set(this.uploadedFile, "type", file.type);
+        this.$set(this.uploadedFile, "lastModified", file.lastModified);
+        this.$set(this.uploadedFile, "size", file.size);
         await axios.post("/upload", formData, {
           headers: {
             "Content-Type": "multipart/form-data"
@@ -166,15 +180,9 @@ export default {
             );
           }
         });
-        const file = this.file;
-        this.$set(this.uploadedFile, "name", file.name);
-        this.$set(this.uploadedFile, "type", file.type);
-        this.$set(this.uploadedFile, "lastModified", file.lastModified);
-        this.$set(this.uploadedFile, "size", file.size);
         this.getBucket();
       } catch (error) {
-        this.snackbar = true;
-        this.message = "Upload Failed.";
+        this.message = "Upload Failed";
       } finally {
         this.file = "";
       }

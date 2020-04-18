@@ -6,11 +6,14 @@
         v-if="contents.body.length && Object.keys(contents.body[0]).length"
         :body="contents.body"
       >
+        <template v-slot:checkbox="{itemKey}">
+          <slot name="checkbox" :itemKey="itemKey" />
+        </template>
         <template v-slot:upload-complete>
           <slot name="upload-complete" />
         </template>
-        <template v-slot:action-buttons="item">
-          <slot name="action-buttons" :itemKey="item.itemKey" />
+        <template v-slot:action-buttons="{itemKey}">
+          <slot name="action-buttons" :itemKey="itemKey" />
         </template>
       </app-table-body>
       <slot v-else-if="!contents.body.length" />

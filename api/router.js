@@ -12,12 +12,11 @@ router.get('/', (req, res) => {
 
 router.delete('/', async (req, res) => {
 	try {
-		const Key = req.body.Key;
+		const { contents } = req.body;
+		const Objects = contents.map((Key) => ({ Key }));
 		await s3.deleteObjects({
 			Bucket: process.env.AWS_BUCKET,
-			Delete: {
-				Objects: [{ Key }],
-			},
+			Delete: { Objects },
 		});
 		res.send();
 	} catch (error) {
@@ -37,8 +36,8 @@ router.get('/bucket', async (req, res) => {
 });
 
 router.post('/upload', multer.single('file'), async (req, res) => {
-	const file = req.file;
 	try {
+		const file = req.file;
 		await s3.upload({
 			ACL: process.env.AWS_ACL,
 			Bucket: process.env.AWS_BUCKET,
