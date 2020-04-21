@@ -37,15 +37,17 @@ router.get('/bucket', async (req, res) => {
 
 router.post('/upload', multer.single('file'), async (req, res) => {
 	try {
-		const file = req.file;
-		await s3.upload({
-			ACL: process.env.AWS_ACL,
-			Bucket: process.env.AWS_BUCKET,
-			Key: file.originalname,
-			ContentType: file.mimetype,
-			ContentEncoding: file.encoding,
-			Body: file.buffer,
-		});
+		// const { isConverted } = req.query;
+		// const { file } = req;
+		await Promise.resolve();
+		// // await s3.upload({
+		// // 	ACL: process.env.AWS_ACL,
+		// // 	Bucket: process.env.AWS_BUCKET,
+		// // 	Key: file.originalname,
+		// // 	ContentType: file.mimetype,
+		// // 	ContentEncoding: file.encoding,
+		// // 	Body: file.buffer,
+		// // });
 		res.send();
 	} catch (error) {
 		res.status(500).send();

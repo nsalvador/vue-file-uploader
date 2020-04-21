@@ -145,6 +145,15 @@ export default {
   created() {
     this.getBucket();
   },
+  watch: {
+    uploadPercentage(newValue) {
+      if (newValue === 100) {
+        setTimeout(() => {
+          this.uploadedFile = {};
+        }, 3500);
+      }
+    }
+  },
   methods: {
     selectAllChangeHandler() {
       if (!this.selectAll && this.selection.length) {
@@ -217,9 +226,13 @@ export default {
             this.uploadPercentage = Math.round(
               (progressEvent.loaded / progressEvent.total) * 100
             );
+          },
+          params: {
+            isConverted: this.isConverted ? "1" : "0"
           }
         });
         this.getBucket();
+        this.isConverted = false;
       } catch (error) {
         this.message = "Upload Failed";
       } finally {
