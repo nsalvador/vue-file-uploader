@@ -18,9 +18,9 @@ router.delete('/', async (req, res) => {
 			Bucket: process.env.AWS_BUCKET,
 			Delete: { Objects },
 		});
-		res.send();
-	} catch (error) {
-		res.status(500).send();
+		res.send({ description: 'Deletion successful' });
+	} catch (e) {
+		res.status(500).send({ description: 'Deletion failed' });
 	}
 });
 
@@ -30,27 +30,32 @@ router.get('/bucket', async (req, res) => {
 			Bucket: process.env.AWS_BUCKET,
 		});
 		res.send(response.Contents);
-	} catch (error) {
-		res.status(500).send();
+	} catch (e) {
+		res
+			.status(500)
+			.send({ description: 'Failed to get the contents of bucket' });
 	}
 });
 
 router.post('/upload', multer.single('file'), async (req, res) => {
 	try {
-		// const { isConverted } = req.query;
-		// const { file } = req;
-		await Promise.resolve();
-		// // await s3.upload({
-		// // 	ACL: process.env.AWS_ACL,
-		// // 	Bucket: process.env.AWS_BUCKET,
-		// // 	Key: file.originalname,
-		// // 	ContentType: file.mimetype,
-		// // 	ContentEncoding: file.encoding,
-		// // 	Body: file.buffer,
-		// // });
+		const { isConverted } = req.query;
+		const { file } = req;
+		if (+isConverted) {
+			console.log('File has been converted to image and upload to bucket.');
+		} else {
+			await s3.upload({
+				ACL: process.env.AWS_ACL,
+				Bucket: process.env.AWS_BUCKET,
+				Key: file.originalname,
+				ContentType: file.mimetype,
+				ContentEncoding: file.encoding,
+				Body: file.buffer,
+			});
+		}
 		res.send();
-	} catch (error) {
-		res.status(500).send();
+	} catch (e) {
+		res.status(500).send({ description: 'Upload failed' });
 	}
 });
 

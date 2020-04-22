@@ -32,7 +32,7 @@
                 <template v-slot:upload-complete>
                   <td v-show="uploadPercentage">
                     <v-progress-linear v-model="uploadPercentage" reactive height="25">
-                      <strong>{{ message === 'Upload Failed' ? message : uploadPercentage.toString() + '%' }}</strong>
+                      <strong>{{ message || uploadPercentage.toString() + '%' }}</strong>
                     </v-progress-linear>
                   </td>
                   <td v-show="uploadPercentage === 100">
@@ -177,20 +177,20 @@ export default {
         this.selection = [];
         this.selectAll = false;
       } catch (error) {
+        this.message = error.response.data.description;
         this.snackbar = true;
-        this.message = "Failed to get bucket";
       }
     },
     async deleteFilesHandler() {
       try {
         this.dialog = false;
-        await axios.delete("/", {
+        const response = await axios.delete("/", {
           data: { contents: this.selection }
         });
-        this.message = "Deletion successful.";
+        this.message = response.data.description;
         this.getBucket();
       } catch (error) {
-        this.message = "Deletion failed.";
+        this.message = error.response.data.description;
       } finally {
         this.snackbar = true;
         this.file = "";
@@ -211,6 +211,7 @@ export default {
     },
     async onSubmit() {
       try {
+        this.message = "";
         const formData = new FormData();
         formData.append("file", this.file);
         const file = this.file;
@@ -234,7 +235,7 @@ export default {
         this.getBucket();
         this.isConverted = false;
       } catch (error) {
-        this.message = "Upload Failed";
+        this.message = error.response.data.description;
       } finally {
         this.file = "";
       }
