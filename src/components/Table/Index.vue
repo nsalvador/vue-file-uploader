@@ -10,13 +10,13 @@
         v-if="contents.body.length && Object.keys(contents.body[0]).length"
         :body="contents.body"
       >
-        <template v-slot:select="{itemKey}">
+        <template v-slot:select="{ itemKey }">
           <slot name="select" :itemKey="itemKey" />
         </template>
         <template v-slot:upload-complete>
           <slot name="upload-complete" />
         </template>
-        <template v-slot:link-button="{itemKey}">
+        <template v-slot:link-button="{ itemKey }">
           <slot name="link-button" :itemKey="itemKey" />
         </template>
       </app-table-body>

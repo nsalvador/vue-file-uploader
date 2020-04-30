@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 
 const s3 = require('./lib/s3');
 const multer = require('./lib/multer');
@@ -18,9 +19,9 @@ router.delete('/', async (req, res) => {
 			Bucket: process.env.AWS_BUCKET,
 			Delete: { Objects },
 		});
-		res.send({ description: 'Deletion successful' });
+		res.send({ message: 'Deletion successful' });
 	} catch (e) {
-		res.status(500).send({ description: 'Deletion failed' });
+		res.status(500).send({ message: 'Deletion failed' });
 	}
 });
 
@@ -31,9 +32,7 @@ router.get('/bucket', async (req, res) => {
 		});
 		res.send(response.Contents);
 	} catch (e) {
-		res
-			.status(500)
-			.send({ description: 'Failed to get the contents of bucket' });
+		res.status(500).send({ message: 'Failed to get the contents of bucket' });
 	}
 });
 
@@ -42,7 +41,9 @@ router.post('/upload', multer.single('file'), async (req, res) => {
 		const { isConverted } = req.query;
 		const { file } = req;
 		if (+isConverted) {
-			console.log('File has been converted to image and upload to bucket.');
+			const writeStream = fs.createWriteStream('temp.pdf');
+			writeStream.write(file.buffer);
+			writeStream.end();
 		} else {
 			await s3.upload({
 				ACL: process.env.AWS_ACL,
@@ -55,7 +56,7 @@ router.post('/upload', multer.single('file'), async (req, res) => {
 		}
 		res.send();
 	} catch (e) {
-		res.status(500).send({ description: 'Upload failed' });
+		res.status(500).send({ message: 'Upload failed' });
 	}
 });
 

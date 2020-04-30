@@ -177,7 +177,7 @@ export default {
         this.selection = [];
         this.selectAll = false;
       } catch (error) {
-        this.message = error.response.data.description;
+        this.message = error.response.data.message;
         this.snackbar = true;
       }
     },
@@ -187,10 +187,10 @@ export default {
         const response = await axios.delete("/", {
           data: { contents: this.selection }
         });
-        this.message = response.data.description;
+        this.message = response.data.message;
         this.getBucket();
       } catch (error) {
-        this.message = error.response.data.description;
+        this.message = error.response.data.message;
       } finally {
         this.snackbar = true;
         this.file = "";
@@ -220,9 +220,7 @@ export default {
         this.$set(this.uploadedFile, "lastModified", file.lastModified);
         this.$set(this.uploadedFile, "size", file.size);
         await axios.post("/upload", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data"
-          },
+          headers: { "Content-Type": "multipart/form-data" },
           onUploadProgress: progressEvent => {
             this.uploadPercentage = Math.round(
               (progressEvent.loaded / progressEvent.total) * 100
@@ -235,7 +233,7 @@ export default {
         this.getBucket();
         this.isConverted = false;
       } catch (error) {
-        this.message = error.response.data.description;
+        this.message = error.response.data.message;
       } finally {
         this.file = "";
       }
