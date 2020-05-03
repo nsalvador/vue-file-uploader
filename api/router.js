@@ -4,6 +4,8 @@ const fs = require('fs');
 
 const s3 = require('./lib/s3');
 const multer = require('./lib/multer');
+const writeBufferToFile = require('./lib/writeBufferToFile');
+const convert = require('./lib/convert');
 
 const router = new express.Router();
 
@@ -38,25 +40,30 @@ router.get('/bucket', async (req, res) => {
 
 router.post('/upload', multer.single('file'), async (req, res) => {
 	try {
-		const { isConverted } = req.query;
 		const { file } = req;
+		const { isConverted } = req.query;
+		let params = {
+			ACL: process.env.AWS_ACL,
+			Bucket: process.env.AWS_BUCKET,
+		};
 		if (+isConverted) {
-			const writeStream = fs.createWriteStream('temp.pdf');
-			writeStream.write(file.buffer);
-			writeStream.end();
+			const fileName = await writeBufferToFile(file.buffer);
+			const buffer = await convert(fileName);
+			params.Key = file.originalname.replace('.pdf', '.png');
+			params.ContentType = 'image/png';
+			params.ContentEncoding = 'base64';
+			params.Body = Buffer.from(buffer);
+			fs.unlinkSync(fileName);
 		} else {
-			await s3.upload({
-				ACL: process.env.AWS_ACL,
-				Bucket: process.env.AWS_BUCKET,
-				Key: file.originalname,
-				ContentType: file.mimetype,
-				ContentEncoding: file.encoding,
-				Body: file.buffer,
-			});
+			params.Key = file.originalname;
+			params.ContentType = file.mimetype;
+			params.ContentEncoding = file.encoding;
+			params.Body = file.buffer;
 		}
+		await s3.upload(params);
 		res.send();
 	} catch (e) {
-		res.status(500).send({ message: 'Upload failed' });
+		res.status(500).send({ message: 'Upload and/or conversion failed' });
 	}
 });
 
