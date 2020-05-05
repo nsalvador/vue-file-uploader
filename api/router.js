@@ -4,7 +4,6 @@ const fs = require('fs');
 
 const s3 = require('./lib/s3');
 const multer = require('./lib/multer');
-const writeBufferToFile = require('./lib/writeBufferToFile');
 const convert = require('./lib/convert');
 
 const router = new express.Router();
@@ -47,18 +46,16 @@ router.post('/upload', multer.single('file'), async (req, res) => {
 			Bucket: process.env.AWS_BUCKET,
 		};
 		if (+isConverted) {
-			const fileName = await writeBufferToFile(file.buffer);
-			const buffer = await convert(fileName);
-			params.Key = file.originalname.replace('.pdf', '.png');
-			params.ContentType = 'image/png';
-			params.ContentEncoding = 'base64';
+			const buffer = await convert(file.buffer);
 			params.Body = Buffer.from(buffer);
-			fs.unlinkSync(fileName);
+			params.ContentEncoding = 'base64';
+			params.ContentType = 'image/png';
+			params.Key = file.originalname.replace('.pdf', '.png');
 		} else {
-			params.Key = file.originalname;
-			params.ContentType = file.mimetype;
-			params.ContentEncoding = file.encoding;
 			params.Body = file.buffer;
+			params.ContentEncoding = file.encoding;
+			params.ContentType = file.mimetype;
+			params.Key = file.originalname;
 		}
 		await s3.upload(params);
 		res.send();
