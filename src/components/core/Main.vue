@@ -69,7 +69,15 @@
         <v-card-title>
           Files in Bucket
           <v-spacer />
-          <span v-show="bucket.length">Total: {{ bucket.length }}</span>
+          <v-chip v-show="bucket.length" class="blue-grey darken-4">
+            <v-avatar
+              left
+              class="blue-grey lighten-3 blue-grey--text text--darken-4"
+            >{{ bucket.length }}</v-avatar>
+            <span
+              class="blue-grey--text text--lighten-3"
+            >{{ bucket.length !== 1 ? 'Objects' : 'Object'}}</span>
+          </v-chip>
         </v-card-title>
         <v-card-subtitle>
           This is a listing of files that have been uploaded to the
