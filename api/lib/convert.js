@@ -4,9 +4,9 @@ const writeToFile = require('./writeToFile');
 const unlink = require('./unlink');
 
 module.exports = async (buffer) => {
-	const fileName = await writeToFile(buffer);
+	const File = await writeToFile(buffer);
 	let response = await convertAPI.convert('png', {
-		File: fileName,
+		File,
 		ImageHeight: 1000,
 		ImageWidth: 680,
 		ScaleImage: true,

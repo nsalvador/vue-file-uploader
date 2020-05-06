@@ -66,7 +66,11 @@
     </v-container>
     <v-container>
       <v-card outlined>
-        <v-card-title>Files in Bucket</v-card-title>
+        <v-card-title>
+          Files in Bucket
+          <v-spacer />
+          <span v-show="bucket.length">Total: {{ bucket.length }}</span>
+        </v-card-title>
         <v-card-subtitle>
           This is a listing of files that have been uploaded to the
           bucket
