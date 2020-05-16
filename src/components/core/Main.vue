@@ -4,10 +4,7 @@
       <v-card outlined>
         <v-form @submit.prevent="onSubmit">
           <v-card-title>Upload File</v-card-title>
-          <v-card-subtitle>
-            Select a file that you would like to upload and then click the
-            upload button.
-          </v-card-subtitle>
+          <v-card-subtitle>Select a file and click button to upload</v-card-subtitle>
           <v-card-text class="py-0">
             <v-file-input
               v-model="file"
@@ -24,7 +21,7 @@
             </v-btn>
           </v-snackbar>
           <v-divider></v-divider>
-          <v-card-text>
+          <v-card-text class="hidden-sm-and-down">
             <app-table
               :contents="{
 									header: ['Name', 'Type', 'Last Modified', 'Size', 'Progress'],
@@ -47,7 +44,7 @@
               </template>
             </app-table>
           </v-card-text>
-          <v-card-actions class="px-4 pt-0">
+          <v-card-actions class="px-4">
             <v-checkbox
               label="Convert to Image File"
               :disabled="!file || snackbar"
@@ -69,22 +66,23 @@
         <v-card-title>
           Files in Bucket
           <v-spacer />
-          <v-chip v-show="bucket.length" class="blue-grey darken-4">
-            <v-avatar
-              left
-              class="blue-grey lighten-3 blue-grey--text text--darken-4"
-            >{{ bucket.length }}</v-avatar>
-            <span
-              class="blue-grey--text text--lighten-3"
-            >{{ bucket.length !== 1 ? 'Objects' : 'Object'}}</span>
-          </v-chip>
+          <v-chip
+            v-show="bucket.length"
+            class="blue-grey darken-4 white--text"
+          >{{ bucket.length }} {{ bucket.length !== 1 ? 'Objects' : 'Object'}}</v-chip>
         </v-card-title>
-        <v-card-subtitle>
-          This is a listing of files that have been uploaded to the
-          bucket
-        </v-card-subtitle>
+        <v-card-subtitle>List of files uploaded to bucket</v-card-subtitle>
         <v-divider></v-divider>
-        <v-card-text>
+        <v-card-text class="hidden-md-and-up">
+          <v-list>
+            <v-list-item v-for="(item, index) in bucket" :key="index">
+              <v-list-item-content>
+                <v-list-item-title v-text="item.Key" />
+              </v-list-item-content>
+            </v-list-item>
+          </v-list>
+        </v-card-text>
+        <v-card-text class="hidden-sm-and-down">
           <app-table
             :contents="{
 								header: ['Name', 'Last Modified', 'Size'],
@@ -125,7 +123,7 @@
             <v-banner>Bucket Is Empty</v-banner>
           </app-table>
         </v-card-text>
-        <v-card-actions>
+        <v-card-actions class="hidden-sm-and-down">
           <v-spacer />
           <v-btn
             class="blue-grey darken-4 white--text"
