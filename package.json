@@ -11,7 +11,7 @@
 		"deploy": "git push -u origin master && git push heroku master"
 	},
 	"dependencies": {
-		"aws-sdk": "^2.656.0",
+		"aws-sdk": "^2.814.0",
 		"axios": "^0.19.2",
 		"convertapi": "^1.4.0",
 		"core-js": "^3.6.4",
